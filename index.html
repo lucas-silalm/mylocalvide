@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dark Theme Video Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e6e6e6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #a0a0a0;
+            font-size: 1.1rem;
+        }
+
+        .player-section {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            border-radius: 10px;
+            overflow: hidden;
+            background: #000;
+            margin-bottom: 20px;
+        }
+
+        #videoPlayer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .control-group {
+            background: rgba(40, 40, 60, 0.6);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-group h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #64ffda;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-group h2::before {
+            content: "";
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #64ffda;
+            border-radius: 50%;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        input[type="url"],
+        input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #4a4a6a;
+            background: rgba(20, 20, 35, 0.7);
+            color: #fff;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="url"]:focus,
+        input[type="file"]:focus {
+            outline: none;
+            border-color: #64ffda;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #00dbde, #fc00ff);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 5px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 219, 222, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .file-upload {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .file-upload input[type="file"] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-label {
+            display: block;
+            padding: 12px;
+            background: rgba(20, 20, 35, 0.7);
+            border: 2px dashed #4a4a6a;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .file-upload-label:hover {
+            border-color: #64ffda;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .status.success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+
+        .status.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+
+        .status.info {
+            background: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+            border: 1px solid #3498db;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dark Theme Video Player</h1>
+            <p class="subtitle">Play videos from URL or local files with subtitle support</p>
+        </header>
+
+        <main>
+            <section class="player-section">
+                <div class="video-container">
+                    <video id="videoPlayer" controls>
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </section>
+
+            <section class="controls-section">
+                <div class="control-group">
+                    <h2>Video Source</h2>
+                    <div class="input-group">
+                        <label for="videoUrl">Video URL (.mp4, .webm, etc.)</label>
+                        <input type="url" id="videoUrl" placeholder="https://example.com/video.mp4">
+                        <button id="loadVideoUrl">Load Video from URL</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Upload Local Video</label>
+                        <div class="file-upload">
+                            <div class="file-upload-label" id="videoFileLabel">
+                                Choose video file...
+                            </div>
+                            <input type="file" id="videoFile" accept="video/*">
+                        </div>
+                        <button id="loadVideoFile">Load Uploaded Video</button>
+                    </div>
+                    <div id="videoStatus" class="status info">
+                        No video loaded
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <h2>Subtitles</h2>
+                    <div class="input-group">
+                        <label for="subtitleUrl">Subtitle URL (.vtt)</label>
+                        <input type="url" id="subtitleUrl" placeholder="https://example.com/subtitles.vtt">
+                        <button id="loadSubtitleUrl">Load Subtitles from URL</button>
+                    </div>
+                    <div class="input-group">
+                        <label>Upload Local Subtitles (.vtt)</label>
+                        <div class="file-upload">
+                            <div class="file-upload-label" id="subtitleFileLabel">
+                                Choose subtitle file...
+                            </div>
+                            <input type="file" id="subtitleFile" accept=".vtt">
+                        </div>
+                        <button id="loadSubtitleFile">Load Uploaded Subtitles</button>
+                    </div>
+                    <div id="subtitleStatus" class="status info">
+                        No subtitles loaded
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Dark Theme Video Player &copy; 2023 | HTML5 Video Player with Subtitle Support</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get DOM elements
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoUrlInput = document.getElementById('videoUrl');
+            const loadVideoUrlBtn = document.getElementById('loadVideoUrl');
+            const videoFileInput = document.getElementById('videoFile');
+            const videoFileLabel = document.getElementById('videoFileLabel');
+            const loadVideoFileBtn = document.getElementById('loadVideoFile');
+            const videoStatus = document.getElementById('videoStatus');
+            
+            const subtitleUrlInput = document.getElementById('subtitleUrl');
+            const loadSubtitleUrlBtn = document.getElementById('loadSubtitleUrl');
+            const subtitleFileInput = document.getElementById('subtitleFile');
+            const subtitleFileLabel = document.getElementById('subtitleFileLabel');
+            const loadSubtitleFileBtn = document.getElementById('loadSubtitleFile');
+            const subtitleStatus = document.getElementById('subtitleStatus');
+
+            // Update file labels when files are selected
+            videoFileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    videoFileLabel.textContent = this.files[0].name;
+                } else {
+                    videoFileLabel.textContent = 'Choose video file...';
+                }
+            });
+
+            subtitleFileInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    subtitleFileLabel.textContent = this.files[0].name;
+                } else {
+                    subtitleFileLabel.textContent = 'Choose subtitle file...';
+                }
+            });
+
+            // Load video from URL
+            loadVideoUrlBtn.addEventListener('click', function() {
+                const url = videoUrlInput.value.trim();
+                if (url) {
+                    loadVideo(url);
+                    showStatus(videoStatus, 'success', 'Video loaded from URL');
+                } else {
+                    showStatus(videoStatus, 'error', 'Please enter a valid video URL');
+                }
+            });
+
+            // Load video from local file
+            loadVideoFileBtn.addEventListener('click', function() {
+                if (videoFileInput.files.length > 0) {
+                    const file = videoFileInput.files[0];
+                    const url = URL.createObjectURL(file);
+                    loadVideo(url);
+                    showStatus(videoStatus, 'success', `Video loaded: ${file.name}`);
+                } else {
+                    showStatus(videoStatus, 'error', 'Please select a video file');
+                }
+            });
+
+            // Load subtitles from URL
+            loadSubtitleUrlBtn.addEventListener('click', function() {
+                const url = subtitleUrlInput.value.trim();
+                if (url) {
+                    loadSubtitles(url);
+                    showStatus(subtitleStatus, 'success', 'Subtitles loaded from URL');
+                } else {
+                    showStatus(subtitleStatus, 'error', 'Please enter a valid subtitle URL');
+                }
+            });
+
+            // Load subtitles from local file
+            loadSubtitleFileBtn.addEventListener('click', function() {
+                if (subtitleFileInput.files.length > 0) {
+                    const file = subtitleFileInput.files[0];
+                    const url = URL.createObjectURL(file);
+                    loadSubtitles(url);
+                    showStatus(subtitleStatus, 'success', `Subtitles loaded: ${file.name}`);
+                } else {
+                    showStatus(subtitleStatus, 'error', 'Please select a subtitle file');
+                }
+            });
+
+            // Function to load video
+            function loadVideo(url) {
+                // Remove existing source elements
+                const existingSources = videoPlayer.querySelectorAll('source');
+                existingSources.forEach(source => source.remove());
+                
+                // Remove existing tracks
+                const existingTracks = videoPlayer.querySelectorAll('track');
+                existingTracks.forEach(track => track.remove());
+                
+                // Set new video source
+                videoPlayer.src = url;
+                videoPlayer.load();
+            }
+
+            // Function to load subtitles
+            function loadSubtitles(url) {
+                // Remove existing tracks
+                const existingTracks = videoPlayer.querySelectorAll('track');
+                existingTracks.forEach(track => track.remove());
+                
+                // Create new track element
+                const track = document.createElement('track');
+                track.kind = 'subtitles';
+                track.label = 'Subtitles';
+                track.srclang = 'en';
+                track.src = url;
+                track.default = true;
+                
+                // Add track to video player
+                videoPlayer.appendChild(track);
+                videoPlayer.textTracks[0].mode = 'showing';
+            }
+
+            // Function to show status messages
+            function showStatus(element, type, message) {
+                element.className = 'status ' + type;
+                element.textContent = message;
+                
+                // Auto-hide success messages after 3 seconds
+                if (type === 'success') {
+                    setTimeout(() => {
+                        element.className = 'status info';
+                        element.textContent = type === 'video' ? 'No video loaded' : 'No subtitles loaded';
+                    }, 3000);
+                }
+            }
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (document.activeElement === videoUrlInput || document.activeElement === subtitleUrlInput) {
+                    return;
+                }
+                
+                switch(e.key) {
+                    case ' ':
+                        e.preventDefault();
+                        if (videoPlayer.paused) {
+                            videoPlayer.play();
+                        } else {
+                            videoPlayer.pause();
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        videoPlayer.currentTime -= 5;
+                        break;
+                    case 'ArrowRight':
+                        videoPlayer.currentTime += 5;
+                        break;
+                    case 'ArrowUp':
+                        videoPlayer.volume = Math.min(1, videoPlayer.volume + 0.1);
+                        break;
+                    case 'ArrowDown':
+                        videoPlayer.volume = Math.max(0, videoPlayer.volume - 0.1);
+                        break;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
